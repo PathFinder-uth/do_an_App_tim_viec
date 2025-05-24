@@ -1,4 +1,4 @@
-package com.example.PathFinder.ui.theme
+package com.example.pathfinder.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.PathFinder"
+    namespace = "com.example.pathfinder"
     compileSdk = 35
 
     defaultConfig {

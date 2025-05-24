@@ -1,4 +1,4 @@
-package com.example.PathFinder
+package com.example.pathfinder
 
 import org.junit.Test
 
