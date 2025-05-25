@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "842012429726",
+    "project_id": "path-finder-uth",
+    "storage_bucket": "path-finder-uth.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:842012429726:android:9e75ed7a843b804cccda8f",
+        "android_client_info": {
+          "package_name": "com.example.PathFinder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvP7EW_D6JgIDWigRhjJOwqJlN_XhHIsg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:842012429726:android:800d9e25aa166f95ccda8f",
+        "android_client_info": {
+          "package_name": "com.example.pathfinder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvP7EW_D6JgIDWigRhjJOwqJlN_XhHIsg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
