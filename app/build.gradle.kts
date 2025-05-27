@@ -59,9 +59,11 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(platform("com.google.firebase:firebase-bom:33.14.0"))
+    implementation ("com.facebook.android:facebook-login:latest_version")
     implementation("com.google.firebase:firebase-analytics")
     testImplementation ("junit:junit:4.13.2")
     testImplementation ("org.mockito:mockito-core:5.2.0")
     testImplementation ("org.mockito.kotlin:mockito-kotlin:5.2.1")
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+
 }
