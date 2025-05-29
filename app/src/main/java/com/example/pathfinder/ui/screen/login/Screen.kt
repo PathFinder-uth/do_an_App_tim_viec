@@ -1,5 +1,5 @@
-package com.example.pathfinder.data.ui.screnn.login.navigation
-// com.example.pathfinder.navigation.Screen.kt
+package com.example.pathfinder.ui.screen.login
+
 
 sealed class Screen(val route: String) {
     object Login : Screen("login_screen")

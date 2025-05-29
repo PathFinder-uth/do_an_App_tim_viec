@@ -1,8 +1,12 @@
+import org.jetbrains.kotlin.gradle.model.Kapt
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+
+
 }
 
 android {
@@ -51,6 +55,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.firebase.auth.ktx)
+    implementation(libs.androidx.navigation.runtime.android)
+    implementation(libs.androidx.navigation.compose.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -59,8 +65,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(platform("com.google.firebase:firebase-bom:33.14.0"))
-    implementation ("com.facebook.android:facebook-login:latest_version")
+    implementation ("com.facebook.android:facebook-login:16.3.0")
     implementation("com.google.firebase:firebase-analytics")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation("com.google.dagger:hilt-android:2.48")
     testImplementation ("junit:junit:4.13.2")
     testImplementation ("org.mockito:mockito-core:5.2.0")
     testImplementation ("org.mockito.kotlin:mockito-kotlin:5.2.1")
