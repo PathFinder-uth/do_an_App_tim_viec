@@ -12,6 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.pathfinder.ui.theme.ApptimViecTheme
+import androidx.compose.material3.Surface // Hoặc androidx.compose.material.Surface nếu bạn dùng Material 2
+import androidx.compose.material3.MaterialTheme // Hoặc androidx.compose.material.MaterialTheme nếu bạn dùng Material 2
+import androidx.navigation.compose.rememberNavController // Để khởi tạo NavHostController
+import com.example.pathfinder.data.ui.screnn.login.navigation.AppNavGraph // Để gọi NavGraph của bạn
+// Đảm bảo "com.example.pathfinder.navigation" là package chính xác cho file NavGraph.kt của bạn
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,16 +24,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ApptimViecTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    /*modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background*/
+                ) {
+                    /*val navController = rememberNavController()
+                AppNavGraph(navController = navController)*/
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
