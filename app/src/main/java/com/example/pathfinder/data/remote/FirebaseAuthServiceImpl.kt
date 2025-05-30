@@ -8,7 +8,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.FacebookAuthProvider
 
 
- class FirebaseAuthServiceImpl(private val auth: FirebaseAuth = FirebaseAuth.getInstance()):IAuthService {
+ class FirebaseAuthServiceImpl  (private val auth: FirebaseAuth = FirebaseAuth.getInstance()):IAuthService {
 
      override suspend fun loginWithEmail(loginRequest: LoginRequest): Result<User> {
         return try {
