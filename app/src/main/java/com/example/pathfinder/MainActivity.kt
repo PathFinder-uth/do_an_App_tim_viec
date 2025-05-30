@@ -9,6 +9,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.pathfinder.navigation.AppNavGraph
 import com.example.pathfinder.ui.theme.ApptimViecTheme
 
+
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

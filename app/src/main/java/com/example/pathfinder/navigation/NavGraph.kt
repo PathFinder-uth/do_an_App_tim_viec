@@ -2,12 +2,17 @@ package com.example.pathfinder.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.pathfinder.data.remote.FirebaseAuthServiceImpl
+import com.example.pathfinder.data.repository.AuthRepository
+import com.example.pathfinder.di.AppContainer
 import com.example.pathfinder.ui.screen.login.LoginScreen
 import com.example.pathfinder.viewmodel.LoginViewModel
+import com.example.pathfinder.viewmodel.LoginViewModelFactory
 
 
 sealed class Screen(val route: String) {
@@ -27,7 +32,9 @@ fun AppNavGraph(
         modifier = modifier
     ) {
         composable(Screen.Login.route) {
-            val loginViewModel: LoginViewModel = hiltViewModel()
+            val loginViewModel: LoginViewModel = viewModel(
+                factory = LoginViewModelFactory(AppContainer.authRepository)
+            )
             LoginScreen(
                 viewModel = loginViewModel,
                 onLoginSuccess = {
