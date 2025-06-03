@@ -18,9 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pathfinder.R
 import com.example.pathfinder.viewmodel.LoginViewModel
+import androidx.navigation.NavController
 
 @Composable
 fun LoginScreen(
+    navController: NavController,
     viewModel: LoginViewModel,
     onLoginSuccess: () -> Unit,
     onNavigateToRegister: () -> Unit,
@@ -149,9 +151,10 @@ fun LoginScreen(
             Text(
                 text = "Tạo tài khoản",
                 color = Color.Blue,
-                modifier = Modifier.clickable { onNavigateToRegister() },
+                modifier = Modifier.clickable {navController.navigate(Screen.Register.route)},
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
+
             )
         }
     }

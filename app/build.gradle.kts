@@ -72,5 +72,7 @@ dependencies {
     testImplementation ("org.mockito:mockito-core:5.2.0")
     testImplementation ("org.mockito.kotlin:mockito-kotlin:5.2.1")
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+    implementation ("androidx.compose.material:material-icons-extended:1.6.0")
+
 
 }

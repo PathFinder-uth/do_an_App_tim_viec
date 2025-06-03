@@ -1,4 +1,4 @@
-package com.example.pathfinder.navigation
+ package com.example.pathfinder.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -36,6 +36,7 @@ fun AppNavGraph(
                 factory = LoginViewModelFactory(AppContainer.authRepository)
             )
             LoginScreen(
+                navController,
                 viewModel = loginViewModel,
                 onLoginSuccess = {
                     navController.navigate(Screen.Home.route) {

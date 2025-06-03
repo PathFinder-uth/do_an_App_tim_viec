@@ -5,8 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.Surface
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.pathfinder.data.ui.screen.register.RegisterScreen
 import com.example.pathfinder.navigation.AppNavGraph
+import com.example.pathfinder.navigation.Screen
+import com.example.pathfinder.ui.screen.login.LoginScreen
 import com.example.pathfinder.ui.theme.ApptimViecTheme
 
 
@@ -20,6 +25,7 @@ class MainActivity : ComponentActivity() {
                 Surface {
                     val navController = rememberNavController()
                     AppNavGraph(navController = navController)
+
                 }
             }
         }
