@@ -40,18 +40,7 @@ import com.google.firebase.auth.FacebookAuthProvider
          }
      }
 
-     override suspend fun loginWithFacebook(token: String): Result<User> {
-         return try {
-             val credential = FacebookAuthProvider.getCredential(token)
-             val result = auth.signInWithCredential(credential).await()
-             val firebaseUser = result.user
-             firebaseUser?.let {
-                 Result.success(User(uid = it.uid, email = it.email, displayName = it.displayName))
-             } ?: Result.failure(Exception("Facebook user is null"))
-         } catch (e: Exception) {
-             Result.failure(e)
-         }
-     }
+
    override fun getCurrentUser(): User? {
         val user = auth.currentUser
         return user?.let {

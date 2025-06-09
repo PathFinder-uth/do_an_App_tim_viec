@@ -68,6 +68,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.14.0"))
     implementation ("com.facebook.android:facebook-login:16.3.0")
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.android.gms:play-services-auth")
     testImplementation ("junit:junit:4.13.2")
     testImplementation ("org.mockito:mockito-core:5.2.0")
     testImplementation ("org.mockito.kotlin:mockito-kotlin:5.2.1")

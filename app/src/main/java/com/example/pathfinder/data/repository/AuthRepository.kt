@@ -12,9 +12,6 @@ class AuthRepository(private val authService: IAuthService) {
     suspend fun loginWithGoogle(token: String): Result<User> {
         return authService.loginWithGoogle(token)
     }
-    suspend fun loginWithFacebook(token: String): Result<User> {
-        return authService.loginWithFacebook(token)
-    }
     fun getCurrentUser(): User? = authService.getCurrentUser()
 
     fun logout() = authService.logout()

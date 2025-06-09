@@ -46,18 +46,6 @@ class LoginViewModel (private val authRepository: AuthRepository) : ViewModel() 
         }
     }
 
-    fun loginWithFacebook(token: String) {
-        _loginState.value = LoginState.Loading
-
-        viewModelScope.launch {
-            val result = authRepository.loginWithFacebook(token)
-            result.onSuccess { user ->
-                _loginState.value = LoginState.Success(user)
-            }.onFailure { exception ->
-                _loginState.value = LoginState.Error(exception.message ?: "Đăng nhập Facebook thất bại")
-            }
-        }
-    }
     fun resetState() {
         _loginState.value = LoginState.Idle
     }
