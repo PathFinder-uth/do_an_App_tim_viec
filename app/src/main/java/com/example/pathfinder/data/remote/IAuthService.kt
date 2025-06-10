@@ -1,6 +1,7 @@
 package com.example.pathfinder.data.remote
 
 import com.example.pathfinder.data.model.LoginRequest
+import com.example.pathfinder.data.model.RegisterRequest
 import com.example.pathfinder.data.model.User
 
 interface IAuthService {
@@ -9,4 +10,6 @@ interface IAuthService {
     suspend fun loginWithFacebook(token: String): Result<User>
     fun getCurrentUser(): User?
     fun logout()
+    suspend fun login(email: String, password: String): Result<User>
+    suspend fun register(request: RegisterRequest): Result<User>
 }

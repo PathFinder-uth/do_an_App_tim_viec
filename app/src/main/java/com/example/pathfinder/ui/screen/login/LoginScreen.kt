@@ -151,7 +151,9 @@ fun LoginScreen(
             Text(
                 text = "Tạo tài khoản",
                 color = Color.Blue,
-                modifier = Modifier.clickable {navController.navigate(Screen.Register.route)},
+                modifier = Modifier.clickable {
+                    onNavigateToRegister() // <-- Gọi callback thay vì gọi trực tiếp navController
+                },
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
 
