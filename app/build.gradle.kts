@@ -69,6 +69,7 @@ dependencies {
     implementation ("com.facebook.android:facebook-login:16.3.0")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.android.gms:play-services-auth")
+    implementation("androidx.compose.material:material-icons-extended:1.6.1")
     testImplementation ("junit:junit:4.13.2")
     testImplementation ("org.mockito:mockito-core:5.2.0")
     testImplementation ("org.mockito.kotlin:mockito-kotlin:5.2.1")

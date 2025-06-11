@@ -47,6 +47,7 @@ import com.google.firebase.auth.GoogleAuthProvider
              val result = auth.createUserWithEmailAndPassword(request.email, request.password).await()
              val firebaseUser = result.user
              firebaseUser?.sendEmailVerification()?.await()
+
              firebaseUser?.let {
                  Result.success(
                      User(

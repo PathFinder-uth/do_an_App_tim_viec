@@ -1,60 +1,48 @@
 package com.example.pathfinder.ui.screen.register // Chú ý: package của bạn là data.ui.screen.register, tôi đã sửa lại thành ui.screen.register cho đúng với cấu trúc mẫu
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.* // Sử dụng Material Design 3
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.pathfinder.ui.theme.ApptimViecTheme
 import androidx.navigation.NavController
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.Alignment
-import androidx.lifecycle.viewmodel.compose.viewModel // Import này quan trọng
-import androidx.navigation.compose.rememberNavController
-import com.example.pathfinder.data.model.LoginRequest
-import com.example.pathfinder.data.model.RegisterRequest
-import com.example.pathfinder.data.model.User
-import com.example.pathfinder.data.remote.IAuthService
-import com.example.pathfinder.data.repository.AuthRepository
-import com.example.pathfinder.di.AppContainer // Import AppContainer của bạn
-import com.example.pathfinder.navigation.Screen // Nếu bạn có định nghĩa Screen cho điều hướng
-import com.example.pathfinder.viewmodel.RegisterViewModel // Import ViewModel
-import com.example.pathfinder.viewmodel.RegisterViewModelFactory // Import ViewModelFactory
-
-// Xóa các import không cần thiết hoặc trùng lặp từ Material2:
-// import androidx.compose.material.*
-// import androidx.compose.material.icons.filled.Check // Không dùng trực tiếp Icon Checkbox nữa
+import com.example.pathfinder.navigation.Screen
+import com.example.pathfinder.viewmodel.RegisterViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     navController: NavController,
-    viewModel: RegisterViewModel// Thêm tham số này để truyền AppContainer
+    viewModel: RegisterViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isRegisteredSuccess) {
         if (uiState.isRegisteredSuccess) {
-            navController.navigate(Screen.Login.route) {
-                popUpTo(navController.graph.startDestinationId) {
-                    inclusive = true
-                }
+            navController.navigate(Screen.EmailVerification.route) {
+                popUpTo(Screen.Register.route) { inclusive = true }
             }
             viewModel.resetRegistrationStatus()
         }
     }
-
 
     Column(
         modifier = Modifier
@@ -75,53 +63,43 @@ fun RegisterScreen(
             )
         )
 
-        Spacer(modifier = Modifier.height(130.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = "Nhập Email",
-            style = TextStyle(
-                fontSize = 16.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Bold
-            ),
-            modifier = Modifier.fillMaxWidth(),
-        )
+        Text("Nhập Email", fontWeight = FontWeight.Bold, color = Color.Black)
         OutlinedTextField(
-            value = uiState.email, // Lấy giá trị từ uiState
-            onValueChange = viewModel::onEmailChange, // Gọi hàm trong ViewModel
+            value = uiState.email,
+            onValueChange = viewModel::onEmailChange,
             placeholder = { Text("email@domain.com") },
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
-                .height(70.dp),
+                .height(56.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            singleLine = true // Thêm để tránh lỗi nhiều dòng
+            singleLine = true
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = "Nhập Password",
-            style = TextStyle(
-                fontSize = 16.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Bold
-            ),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Spacer(modifier = Modifier.height(5.dp))
-
+        Text("Nhập Password", fontWeight = FontWeight.Bold, color = Color.Black)
         OutlinedTextField(
-            value = uiState.password, // Lấy giá trị từ uiState
-            onValueChange = viewModel::onPasswordChange, // Gọi hàm trong ViewModel
+            value = uiState.password,
+            onValueChange = viewModel::onPasswordChange,
             placeholder = { Text("password") },
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
-                .height(70.dp),
+                .height(56.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            visualTransformation = PasswordVisualTransformation(), // Ẩn mật khẩu
-            singleLine = true
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            singleLine = true,
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = null
+                    )
+                }
+            }
         )
 
         Text(
@@ -134,57 +112,47 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = "Xác nhận lại Password",
-            style = TextStyle(
-                fontSize = 16.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Bold
-            ),
-            modifier = Modifier.fillMaxWidth(),
-        )
-
+        Text("Xác nhận lại Password", fontWeight = FontWeight.Bold, color = Color.Black)
         OutlinedTextField(
-            value = uiState.confirmPassword, // Lấy giá trị từ uiState
-            onValueChange = viewModel::onConfirmPasswordChange, // Gọi hàm trong ViewMode
+            value = uiState.confirmPassword,
+            onValueChange = viewModel::onConfirmPasswordChange,
             placeholder = { Text("password") },
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
-                .height(70.dp),
+                .height(56.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            visualTransformation = PasswordVisualTransformation(), // Ẩn mật khẩu
-            singleLine = true
+            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            singleLine = true,
+            trailingIcon = {
+                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                    Icon(
+                        imageVector = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = null
+                    )
+                }
+            }
         )
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Row(
-            verticalAlignment = Alignment.CenterVertically, // Căn giữa chiều dọc
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White).height(70.dp)
-                .clickable { viewModel.onAgreeToTermsChange(!uiState.agreeToTerms) } // Cập nhật trạng thái trong ViewModel
+                .background(Color.White)
+                .height(56.dp)
+                .clickable { viewModel.onAgreeToTermsChange(!uiState.agreeToTerms) }
         ) {
-            // Sử dụng Material3 Checkbox
             Checkbox(
-                modifier = Modifier.align(Alignment.Top),
-                checked = uiState.agreeToTerms, // Lấy giá trị từ uiState
-                onCheckedChange = viewModel::onAgreeToTermsChange, // Gọi hàm trong ViewModel
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                checked = uiState.agreeToTerms,
+                onCheckedChange = viewModel::onAgreeToTermsChange,
+                colors = CheckboxDefaults.colors()
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                "Đồng ý với các điều khoản và chính sách của PathFinder",
-                fontSize = 16.sp,
-                modifier = Modifier.weight(1f) // Text sẽ chiếm phần còn lại
-            )
+            Text("Đồng ý với các điều khoản và chính sách của PathFinder", fontSize = 14.sp)
         }
 
-        // Hiển thị thông báo lỗi từ ViewModel
         uiState.errorMessage?.let { message ->
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -195,17 +163,16 @@ fun RegisterScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(50.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = viewModel::register, // Gọi hàm register trong ViewModel
+            onClick = viewModel::register,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
-                .padding(bottom = 10.dp), // background(Color.Black) ở đây không có tác dụng nếu có shape
+                .height(48.dp),
             shape = RoundedCornerShape(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
-            enabled = !uiState.isLoading // Nút bị vô hiệu hóa khi đang loading
+            enabled = !uiState.isLoading
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
@@ -215,5 +182,3 @@ fun RegisterScreen(
         }
     }
 }
-
-
