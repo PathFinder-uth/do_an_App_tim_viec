@@ -2,10 +2,11 @@ package com.example.pathfinder.data.remote
 
 import com.google.firebase.auth.FirebaseAuth
 import com.example.pathfinder.data.model.LoginRequest
+import com.example.pathfinder.data.model.RegisterRequest
 import com.example.pathfinder.data.model.User
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.FacebookAuthProvider
+
 
 
  class FirebaseAuthServiceImpl  (private val auth: FirebaseAuth = FirebaseAuth.getInstance()):IAuthService {
@@ -40,7 +41,33 @@ import com.google.firebase.auth.FacebookAuthProvider
          }
      }
 
+     override suspend fun register(request: RegisterRequest): Result<User> {
+         return try {
+             // Sử dụng request.email và request.password để đăng ký
+             val result = auth.createUserWithEmailAndPassword(request.email, request.password).await()
+             val firebaseUser = result.user
+             firebaseUser?.sendEmailVerification()?.await()
+             firebaseUser?.let {
+                 Result.success(
+                     User(
+                         uid = it.uid,
+                         email = it.email,
+                         displayName = it.displayName
+                     )
+                 )
+             } ?: Result.failure(Exception("User is null after registration"))
+         } catch (e: Exception) {
+             Result.failure(e)
+         }
+     }
+     override suspend fun sendEmailVerification() {
+         auth.currentUser?.sendEmailVerification()?.await()
+     }
 
+     override suspend fun isEmailVerified(): Boolean {
+         auth.currentUser?.reload()?.await() // Cập nhật trạng thái mới nhất
+         return auth.currentUser?.isEmailVerified ?: false
+     }
    override fun getCurrentUser(): User? {
         val user = auth.currentUser
         return user?.let {

@@ -1,12 +1,15 @@
 package com.example.pathfinder.data.remote
 
 import com.example.pathfinder.data.model.LoginRequest
+import com.example.pathfinder.data.model.RegisterRequest
 import com.example.pathfinder.data.model.User
 
 interface IAuthService {
     suspend fun loginWithEmail(loginRequest: LoginRequest): Result<User>
     suspend fun loginWithGoogle(idToken: String): Result<User>
-
+    suspend fun register(request: RegisterRequest): Result<User>
+    suspend fun sendEmailVerification()
+    suspend fun isEmailVerified(): Boolean
     fun getCurrentUser(): User?
     fun logout()
 }
