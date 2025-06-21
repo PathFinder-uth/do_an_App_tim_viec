@@ -23,6 +23,9 @@ class AuthRepository(private val authService: IAuthService) {
     suspend fun isEmailVerified(): Boolean {
         return authService.isEmailVerified()
     }
+    suspend fun sendResetEmail(email: String): Result<Unit> {
+        return authService.sendResetEmail(email)
+    }
     fun getCurrentUser(): User? = authService.getCurrentUser()
 
     fun logout() = authService.logout()

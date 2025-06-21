@@ -47,7 +47,7 @@ fun RegisterScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF7DE4F5))
+            .background(Color(0xFF67C2F6))
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top

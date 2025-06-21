@@ -26,7 +26,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.TextFieldDefaults
-
+import com.example.pathfinder.viewmodel.state.LoginState
+import android.util.Patterns
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 
 @Composable
 fun LoginScreen(
@@ -63,7 +67,15 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     val loginState by viewModel.loginState.collectAsState()
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
+    LaunchedEffect(loginState) {
+        if (loginState is LoginState.Success) {
+            onLoginSuccess()  // điều hướng sang ConfirmInfoScreen
+            viewModel.resetState()
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -90,27 +102,64 @@ fun LoginScreen(
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = {
+                    email = it
+                    emailError = null
+                },
                 label = { Text("email@domain.com") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                isError = emailError != null,
+                modifier = Modifier.fillMaxWidth(),
+                supportingText = {
+                    if (emailError != null) Text(emailError!!, color = Color.Red, fontSize = 12.sp)
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    passwordError = null
+                },
                 label = { Text("password") },
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
+                trailingIcon = {
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = "Toggle Password Visibility",
+                        modifier = Modifier.clickable { passwordVisible = !passwordVisible }
+                    )
+                },
+                isError = passwordError != null,
+                modifier = Modifier.fillMaxWidth(),
+                supportingText = {
+                    if (passwordError != null) Text(passwordError!!, color = Color.Red, fontSize = 12.sp)
+                }
             )
-
+            (loginState as? LoginState.Error)?.let { errorState ->
+                Text(
+                    text = errorState.message,
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                )
+            }
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { viewModel.login(email, password) },
+                onClick = {
+                    when {
+                        email.isBlank() -> emailError = "Không được để trống email"
+                        !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> emailError = "Sai định dạng email"
+                        password.isBlank() -> passwordError = "Mật khẩu không được để trống"
+                        else -> viewModel.login(email.trim(), password)
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -118,14 +167,13 @@ fun LoginScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
             ) {
                 Text("Continue", color = Color.White, fontSize = 18.sp)
+
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+            Spacer(modifier = Modifier.height(32.dp))
             Text(
                 "Quên mật khẩu?",
                 color = Color.Black,
-                modifier = Modifier.clickable { /* TODO: Forgot password logic */ }
+                modifier = Modifier.clickable { onForgotPassword() }
             )
 
             Spacer(modifier = Modifier.height(32.dp))

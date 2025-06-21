@@ -1,5 +1,6 @@
 package com.example.pathfinder.viewmodel
 
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pathfinder.data.model.LoginRequest
@@ -22,14 +23,19 @@ class LoginViewModel (private val authRepository: AuthRepository) : ViewModel() 
             return
         }
 
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            _loginState.value = LoginState.Error("Email không đúng định dạng")
+            return
+        }
+
         _loginState.value = LoginState.Loading
 
         viewModelScope.launch {
             val result = authRepository.loginWithEmail(LoginRequest(email, password))
             result.onSuccess { user ->
                 _loginState.value = LoginState.Success(user)
-            }.onFailure { exception ->
-                _loginState.value = LoginState.Error(exception.message ?: "Đăng nhập thất bại")
+            }.onFailure {
+                _loginState.value = LoginState.Error("Đăng nhập thất bại")
             }
         }
     }

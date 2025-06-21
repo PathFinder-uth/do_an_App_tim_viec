@@ -10,6 +10,7 @@ interface IAuthService {
     suspend fun register(request: RegisterRequest): Result<User>
     suspend fun sendEmailVerification()
     suspend fun isEmailVerified(): Boolean
+    suspend fun sendResetEmail(email: String): Result<Unit>
     fun getCurrentUser(): User?
     fun logout()
 }

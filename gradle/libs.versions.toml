@@ -11,6 +11,7 @@ composeBom = "2025.05.01"
 firebaseAuthKtx = "23.2.1"
 navigationRuntimeAndroid = "2.9.0"
 navigationComposeAndroid = "2.9.0"
+firebaseFirestoreKtx = "25.1.4"
 
 
 [libraries]
@@ -31,6 +32,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 androidx-navigation-runtime-android = { group = "androidx.navigation", name = "navigation-runtime-android", version.ref = "navigationRuntimeAndroid" }
 androidx-navigation-compose-android = { group = "androidx.navigation", name = "navigation-compose-android", version.ref = "navigationComposeAndroid" }
+firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

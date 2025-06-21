@@ -1,6 +1,6 @@
 package com.example.pathfinder.viewmodel.state
 
-data class RegisterState(
+data class RegisterUiState(
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",

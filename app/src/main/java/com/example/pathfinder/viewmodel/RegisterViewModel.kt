@@ -10,17 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update // Quan trọng: import hàm update
 import kotlinx.coroutines.launch
+import com.example.pathfinder.viewmodel.state.RegisterUiState
 
-// Data class để giữ trạng thái UI cho màn hình Đăng ký
-data class RegisterUiState(
-    val email: String = "",
-    val password: String = "",
-    val confirmPassword: String = "",
-    val agreeToTerms: Boolean = false,
-    val isLoading: Boolean = false,
-    val isRegisteredSuccess: Boolean = false,
-    val errorMessage: String? = null
-)
 
 class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel() {
 

@@ -25,7 +25,7 @@ import com.google.firebase.auth.GoogleAuthProvider
                 )
             } ?: Result.failure(Exception("User is null"))
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception("Đăng nhập thất bại"))
         }
     }
      override suspend fun loginWithGoogle(idToken: String): Result<User> {
@@ -79,7 +79,14 @@ import com.google.firebase.auth.GoogleAuthProvider
             )
         }
     }
-
+     override suspend fun sendResetEmail(email: String): Result<Unit> {
+         return try {
+             auth.sendPasswordResetEmail(email).await()
+             Result.success(Unit)
+         } catch (e: Exception) {
+             Result.failure(e)
+         }
+     }
    override fun logout() {
         auth.signOut()
     }
