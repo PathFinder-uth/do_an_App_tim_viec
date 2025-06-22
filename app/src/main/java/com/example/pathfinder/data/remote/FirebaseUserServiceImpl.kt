@@ -14,7 +14,7 @@ class FirebaseUserServiceImpl(
         return try {
             val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Chưa đăng nhập"))
             val snapshot = firestore.collection("users").document(uid).get().await()
-            val profile = snapshot.toObject(UserProfile::class.java)
+            val profile = snapshot.toObject(UserProfile::class.java)?.copy(uid = uid)
             if (profile != null) {
                 Result.success(profile)
             } else {
@@ -28,8 +28,9 @@ class FirebaseUserServiceImpl(
     override suspend fun updateProfile(profile: UserProfile): Result<UserProfile> {
         return try {
             val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Chưa đăng nhập"))
-            firestore.collection("users").document(uid).set(profile).await()
-            Result.success(profile)
+            val updatedProfile = profile.copy(uid = uid) // 🔒 Gán UID chuẩn luôn
+            firestore.collection("users").document(uid).set(updatedProfile).await()
+            Result.success(updatedProfile)
         } catch (e: Exception) {
             Result.failure(e)
         }

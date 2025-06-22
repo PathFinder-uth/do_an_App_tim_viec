@@ -26,9 +26,11 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.pathfinder.viewmodel.ProfileViewModel
 import android.widget.Toast
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.navigation.NavController
+import com.example.pathfinder.navigation.Screen
 import com.example.pathfinder.ui.component.rememberUCropLauncher
 @Composable
-fun ProfileFormScreen(viewModel: ProfileViewModel) {
+fun ProfileFormScreen(viewModel: ProfileViewModel, navController: NavController) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val launchCrop = rememberUCropLauncher(context = context) { croppedUri ->
@@ -45,6 +47,15 @@ fun ProfileFormScreen(viewModel: ProfileViewModel) {
             pickImageLauncher.launch("image/*")
         } else {
             Toast.makeText(context, "Bạn cần cấp quyền để chọn ảnh", Toast.LENGTH_SHORT).show()
+        }
+    }
+    val isSubmitted by viewModel.isSubmitted.collectAsState()
+    LaunchedEffect(isSubmitted) {
+        if (isSubmitted) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.ConfirmInfo.route) { inclusive = true }
+            }
+            viewModel.resetSubmissionState()
         }
     }
 

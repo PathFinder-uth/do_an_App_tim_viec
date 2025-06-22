@@ -13,6 +13,9 @@ import com.example.pathfinder.data.repository.ProfileRepository
 
 class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() {
 
+    private val _isSubmitted = MutableStateFlow(false)
+    val isSubmitted: StateFlow<Boolean> = _isSubmitted
+
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState
 
@@ -62,7 +65,14 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
 
     fun onSubmit() {
         viewModelScope.launch {
+// 🔥 Lấy uid từ FirebaseAuth hiện tại
+            val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+            if (uid == null) {
+                _uiState.value = _uiState.value.copy(message = "Không thể xác định người dùng.")
+                return@launch
+            }
             val profile = UserProfile(
+                uid = uid, // ✅ Gán đúng UID vào đây
                 fullName = _uiState.value.fullName,
                 gender = _uiState.value.gender,
                 address = _uiState.value.address,
@@ -71,13 +81,18 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
                 contact = _uiState.value.contact,
                 avatarUrl = _uiState.value.avatarUrl
             )
+
             val result = repository.updateUserProfile(profile)
             result.onSuccess {
                 _uiState.value = _uiState.value.copy(message = "Cập nhật thành công")
+                _isSubmitted.value = true // ✅ giúp chuyển hướng về Home
             }.onFailure {
                 _uiState.value = _uiState.value.copy(message = it.message ?: "Đã xảy ra lỗi")
             }
         }
+    }
+    fun resetSubmissionState() {
+        _isSubmitted.value = false
     }
 
     fun uploadAvatar(uri: Uri, context: Context) {

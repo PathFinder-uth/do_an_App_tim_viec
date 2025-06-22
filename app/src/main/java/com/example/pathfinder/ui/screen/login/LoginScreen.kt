@@ -31,11 +31,11 @@ import android.util.Patterns
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-
+import androidx.navigation.NavController
+import com.example.pathfinder.navigation.Screen
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
-    onLoginSuccess: () -> Unit,
     onNavigateToRegister: () -> Unit,
     onForgotPassword: () -> Unit
 )
@@ -70,12 +70,7 @@ fun LoginScreen(
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(loginState) {
-        if (loginState is LoginState.Success) {
-            onLoginSuccess()  // điều hướng sang ConfirmInfoScreen
-            viewModel.resetState()
-        }
-    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -188,8 +183,10 @@ fun LoginScreen(
 
             Button(
                 onClick = {
-                    val signInIntent = googleSignInClient.signInIntent
-                    launcher.launch(signInIntent)
+                    googleSignInClient.signOut().addOnCompleteListener {
+                        val signInIntent = googleSignInClient.signInIntent
+                        launcher.launch(signInIntent)
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White)

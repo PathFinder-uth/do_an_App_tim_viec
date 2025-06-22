@@ -1,6 +1,10 @@
 package com.example.pathfinder.navigation
 
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -18,7 +22,7 @@ import com.example.pathfinder.ui.screen.register.EmailVerificationScreen
 import com.example.pathfinder.ui.screen.forgotpassword.ForgotPasswordScreen
 import com.example.pathfinder.ui.screen.confirm.ConfirmInfoScreen
 import com.example.pathfinder.ui.screen.profile.ProfileFormScreen
-
+import com.example.pathfinder.ui.screen.home.HomeScreen
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
@@ -41,14 +45,25 @@ fun AppNavGraph(
     ) {
         composable(Screen.Login.route) {
             val loginViewModel: LoginViewModel = viewModel(factory = AppContainer.loginViewModelFactory)
+            val loginState = loginViewModel.loginState.collectAsState()
+
+// Điều hướng sau khi đăng nhập thành công
+            LaunchedEffect(loginState.value) {
+                when (val state = loginState.value) {
+                    is com.example.pathfinder.viewmodel.state.LoginState.Success -> {
+                        navController.navigate(
+                            if (state.hasProfile) Screen.Home.route else Screen.ConfirmInfo.route
+                        ) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                        loginViewModel.resetState()
+                    }
+                    else -> {}
+                }
+            }
+
             LoginScreen(
                 viewModel = loginViewModel,
-                onLoginSuccess = {
-// Điều hướng tới màn hình xác nhận thông tin
-                    navController.navigate(Screen.ConfirmInfo.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
-                },
                 onNavigateToRegister = {
                     navController.navigate(Screen.Register.route)
                 },
@@ -98,11 +113,23 @@ fun AppNavGraph(
 
         composable(Screen.Profile.route) {
             val profileViewModel: ProfileViewModel = viewModel(factory = AppContainer.profileViewModelFactory)
-            ProfileFormScreen(viewModel = profileViewModel)
+            ProfileFormScreen(
+                viewModel = profileViewModel,
+                navController = navController)
         }
 
         composable(Screen.Home.route) {
-            // Placeholder nếu cần
+            val profileViewModel: ProfileViewModel = viewModel(factory = AppContainer.profileViewModelFactory)
+            val activity = LocalActivity.current as? ComponentActivity
+            if (activity != null) {
+                HomeScreen(
+                    viewModel = profileViewModel,
+                    activity = activity,
+                    navController = navController,
+                    sessionManager = AppContainer.sessionManager,
+                    authRepository = AppContainer.authRepository
+                )
+            }
         }
     }
 }
