@@ -5,6 +5,7 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -23,7 +24,10 @@ import com.example.pathfinder.ui.screen.forgotpassword.ForgotPasswordScreen
 import com.example.pathfinder.ui.screen.confirm.ConfirmInfoScreen
 import com.example.pathfinder.ui.screen.profile.ProfileFormScreen
 import com.example.pathfinder.ui.screen.home.HomeScreen
+import com.example.pathfinder.ui.screen.splash.SplashScreen
+
 sealed class Screen(val route: String) {
+    object Splash : Screen("splash")
     object Login : Screen("login")
     object Register : Screen("register")
     object EmailVerification : Screen("email_verification")
@@ -40,9 +44,27 @@ fun AppNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route,
+        startDestination = Screen.Splash.route,
         modifier = modifier
     ) {
+        composable(Screen.Splash.route) {
+            val isLoggedIn by AppContainer.sessionManager.isLoggedInFlow
+                .collectAsState(initial = null)
+
+            val hasProfile by AppContainer.sessionManager.hasProfileFlow
+                .collectAsState(initial = null)
+
+            isLoggedIn?.let { it1 ->
+                hasProfile?.let { it2 ->
+                    SplashScreen(
+                        navController = navController,
+                        isLoggedIn = it1,
+                        hasProfile = it2
+                    )
+                }
+            }
+        }
+
         composable(Screen.Login.route) {
             val loginViewModel: LoginViewModel = viewModel(factory = AppContainer.loginViewModelFactory)
             val loginState = loginViewModel.loginState.collectAsState()

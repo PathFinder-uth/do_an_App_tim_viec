@@ -25,20 +25,6 @@ class MainActivity : ComponentActivity() {
             ApptimViecTheme {
                 val navController = rememberNavController()
 
-                val isLoggedIn by AppContainer.sessionManager.isLoggedInFlow.collectAsState(initial = false)
-                val hasProfile by AppContainer.sessionManager.hasProfileFlow.collectAsState(initial = false)
-
-                LaunchedEffect(isLoggedIn, hasProfile) {
-                    val startDestination = when {
-                        isLoggedIn && hasProfile -> Screen.Home.route
-                        isLoggedIn && !hasProfile -> Screen.ConfirmInfo.route
-                        else -> Screen.Login.route
-                    }
-                    navController.navigate(startDestination) {
-                        popUpTo(0)
-                    }
-                }
-
                 AppNavGraph(navController = navController)
             }
         }

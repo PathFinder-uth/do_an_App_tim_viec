@@ -222,5 +222,15 @@ fun LoginScreen(
                 fontWeight = FontWeight.SemiBold
             )
         }
+        if (loginState is LoginState.Loading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color.White)
+            }
+        }
     }
 }
