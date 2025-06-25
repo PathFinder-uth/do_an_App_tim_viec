@@ -140,5 +140,17 @@ class RecruiterInfoViewModel(
             industryError,
             companySizeError
         ).all { it == null }
+
+
+    }
+    fun loadProfile() {
+        viewModelScope.launch {
+            profileRepository.getRecruiterProfile().onSuccess { profile ->
+                _uiState.value = _uiState.value.copy(
+                    companyName = profile.companyName,
+                    logoUrl = profile.logoUrl
+                )
+            }
+        }
     }
 }

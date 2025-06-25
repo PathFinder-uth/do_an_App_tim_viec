@@ -181,7 +181,20 @@ fun AppNavGraph(
 
         // ✅ Màn hình trang chủ nhà tuyển dụng
         composable(Screen.RecruiterHome.route) {
-            RecruiterHomeScreen(navController = navController)
+            val viewModel: RecruiterInfoViewModel = viewModel(factory = AppContainer.recruiterInfoViewModelFactory)
+            val uiState by viewModel.uiState.collectAsState()
+
+            LaunchedEffect(Unit) {
+                viewModel.loadProfile()
+            }
+
+            RecruiterHomeScreen(
+                navController = navController,
+                sessionManager = sessionManager,
+                authRepository = AppContainer.authRepository,
+                companyName = uiState.companyName,
+                logoUrl = uiState.logoUrl
+            )
         }
     }
 }
