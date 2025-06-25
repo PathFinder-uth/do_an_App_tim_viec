@@ -1,5 +1,6 @@
 package com.example.pathfinder.ui.screen.recruiterhome
 
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -27,6 +28,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun RecruiterHomeScreen(
     navController: NavController,
+    activity: ComponentActivity,
     sessionManager: SessionManager,
     authRepository: AuthRepository,
     companyName: String,
@@ -46,7 +48,7 @@ fun RecruiterHomeScreen(
             title = { Text("Xác nhận thoát") },
             text = { Text("Bạn có muốn thoát ứng dụng không?") },
             confirmButton = {
-                TextButton(onClick = { showExitDialog = false; navController.popBackStack() }) {
+                TextButton(onClick = { activity.finish() }) {
                     Text("Xác nhận")
                 }
             },

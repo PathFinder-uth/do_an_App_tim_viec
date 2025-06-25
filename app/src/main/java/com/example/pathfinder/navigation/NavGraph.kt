@@ -183,18 +183,20 @@ fun AppNavGraph(
         composable(Screen.RecruiterHome.route) {
             val viewModel: RecruiterInfoViewModel = viewModel(factory = AppContainer.recruiterInfoViewModelFactory)
             val uiState by viewModel.uiState.collectAsState()
-
+            val activity = LocalActivity.current as? ComponentActivity
             LaunchedEffect(Unit) {
                 viewModel.loadProfile()
             }
-
-            RecruiterHomeScreen(
-                navController = navController,
-                sessionManager = sessionManager,
-                authRepository = AppContainer.authRepository,
-                companyName = uiState.companyName,
-                logoUrl = uiState.logoUrl
-            )
+            if (activity != null) {
+                RecruiterHomeScreen(
+                    navController = navController,
+                    activity = activity,
+                    sessionManager = sessionManager,
+                    authRepository = AppContainer.authRepository,
+                    companyName = uiState.companyName,
+                    logoUrl = uiState.logoUrl
+                )
+            }
         }
     }
 }
