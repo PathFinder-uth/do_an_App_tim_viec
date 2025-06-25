@@ -2,6 +2,7 @@ package com.example.pathfinder.viewmodel
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pathfinder.data.model.UserProfile
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import com.example.pathfinder.data.repository.ProfileRepository
+import com.example.pathfinder.di.AppContainer.sessionManager
 
 class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() {
 
@@ -45,20 +47,26 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
 
     fun loadUserProfile() {
         viewModelScope.launch {
-            val result = repository.getUserProfile()
-            result.onSuccess {
-                _uiState.value = _uiState.value.copy(
-                    fullName = it.fullName,
-                    gender = it.gender,
-                    address = it.address,
-                    phone = it.phone,
-                    birthday = it.birthday,
-                    contact = it.contact,
-                    avatarUrl = it.avatarUrl,
-                    message = ""
-                )
-            }.onFailure {
-                _uiState.value = _uiState.value.copy(message = it.message ?: "Đã xảy ra lỗi")
+            val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+            if (uid != null) {
+                val result = repository.getUserProfile(uid)
+                result.onSuccess {
+                    _uiState.value = _uiState.value.copy(
+                        fullName = it.fullName,
+                        gender = it.gender,
+                        address = it.address,
+                        phone = it.phone,
+                        birthday = it.birthday,
+                        contact = it.contact,
+                        avatarUrl = it.avatarUrl,
+                        message = "",
+
+                    )
+                }.onFailure {
+                    _uiState.value = _uiState.value.copy(message = it.message ?: "Đã xảy ra lỗi")
+                }
+            } else {
+                _uiState.value = _uiState.value.copy(message = "Không xác định được người dùng")
             }
         }
     }
@@ -79,11 +87,18 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
                 phone = _uiState.value.phone,
                 birthday = _uiState.value.birthday,
                 contact = _uiState.value.contact,
-                avatarUrl = _uiState.value.avatarUrl
+                avatarUrl = _uiState.value.avatarUrl,
+                role = "candidate"
             )
 
             val result = repository.updateUserProfile(profile)
             result.onSuccess {
+                Log.d("ProfileSubmit", "Lưu session: isLoggedIn=true, hasProfile=true, isRecruiter=false")
+                sessionManager.saveSession(
+                    loggedIn = true,
+                    hasProfile = true,
+                    role = "candidate"
+                )
                 _uiState.value = _uiState.value.copy(message = "Cập nhật thành công")
                 _isSubmitted.value = true // ✅ giúp chuyển hướng về Home
             }.onFailure {

@@ -3,6 +3,7 @@ package com.example.pathfinder.data.remote
 import com.example.pathfinder.data.model.UserProfile
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 
 class FirebaseUserServiceImpl(
@@ -10,9 +11,8 @@ class FirebaseUserServiceImpl(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) : IFirebaseUserService {
 
-    override suspend fun getProfile(): Result<UserProfile> {
+    override suspend fun getProfile(uid: String): Result<UserProfile> {
         return try {
-            val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Chưa đăng nhập"))
             val snapshot = firestore.collection("users").document(uid).get().await()
             val profile = snapshot.toObject(UserProfile::class.java)?.copy(uid = uid)
             if (profile != null) {
@@ -25,11 +25,21 @@ class FirebaseUserServiceImpl(
         }
     }
 
+    override suspend fun updateUserRole(uid: String, role: String): Result<Unit> {
+        return try {
+            val updateMap = mapOf("role" to role)
+            firestore.collection("users").document(uid).set(updateMap, SetOptions.merge()).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun updateProfile(profile: UserProfile): Result<UserProfile> {
         return try {
             val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Chưa đăng nhập"))
-            val updatedProfile = profile.copy(uid = uid) // 🔒 Gán UID chuẩn luôn
-            firestore.collection("users").document(uid).set(updatedProfile).await()
+            val updatedProfile = profile.copy(uid = uid)
+            firestore.collection("users").document(uid).set(updatedProfile, SetOptions.merge()).await()
             Result.success(updatedProfile)
         } catch (e: Exception) {
             Result.failure(e)

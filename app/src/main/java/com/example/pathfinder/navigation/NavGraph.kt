@@ -12,6 +12,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.pathfinder.di.AppContainer
+import com.example.pathfinder.di.AppContainer.sessionManager
 import com.example.pathfinder.ui.screen.login.LoginScreen
 import com.example.pathfinder.viewmodel.LoginViewModel
 import com.example.pathfinder.viewmodel.RegisterViewModel
@@ -24,7 +25,13 @@ import com.example.pathfinder.ui.screen.forgotpassword.ForgotPasswordScreen
 import com.example.pathfinder.ui.screen.confirm.ConfirmInfoScreen
 import com.example.pathfinder.ui.screen.profile.ProfileFormScreen
 import com.example.pathfinder.ui.screen.home.HomeScreen
+import com.example.pathfinder.ui.screen.recruiter.RecruiterInfoScreen
+import com.example.pathfinder.ui.screen.recruiterhome.RecruiterHomeScreen
 import com.example.pathfinder.ui.screen.splash.SplashScreen
+import com.example.pathfinder.viewmodel.SelectUserTypeViewModel
+import com.example.pathfinder.ui.screen.select.SelectUserTypeScreen
+import com.example.pathfinder.viewmodel.RecruiterInfoViewModel
+import com.example.pathfinder.viewmodel.state.LoginState
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
@@ -35,6 +42,9 @@ sealed class Screen(val route: String) {
     object ConfirmInfo : Screen("confirm_info")
     object Profile : Screen("profile")
     object Home : Screen("home") // Tạm placeholder
+    object SelectUserType : Screen("select_user_type")
+    object RecruiterProfile : Screen("recruiter_profile")
+    object RecruiterHome : Screen("recruiter_home")
 }
 
 @Composable
@@ -48,21 +58,7 @@ fun AppNavGraph(
         modifier = modifier
     ) {
         composable(Screen.Splash.route) {
-            val isLoggedIn by AppContainer.sessionManager.isLoggedInFlow
-                .collectAsState(initial = null)
-
-            val hasProfile by AppContainer.sessionManager.hasProfileFlow
-                .collectAsState(initial = null)
-
-            isLoggedIn?.let { it1 ->
-                hasProfile?.let { it2 ->
-                    SplashScreen(
-                        navController = navController,
-                        isLoggedIn = it1,
-                        hasProfile = it2
-                    )
-                }
-            }
+            SplashScreen(navController = navController, sessionManager = sessionManager)
         }
 
         composable(Screen.Login.route) {
@@ -72,12 +68,18 @@ fun AppNavGraph(
 // Điều hướng sau khi đăng nhập thành công
             LaunchedEffect(loginState.value) {
                 when (val state = loginState.value) {
-                    is com.example.pathfinder.viewmodel.state.LoginState.Success -> {
-                        navController.navigate(
-                            if (state.hasProfile) Screen.Home.route else Screen.ConfirmInfo.route
-                        ) {
+                    is LoginState.Success -> {
+                        val role = sessionManager.getSession().role
+                        val route = when {
+                            !state.hasProfile -> Screen.SelectUserType.route
+                            role == "recruiter" -> Screen.RecruiterHome.route
+                            else -> Screen.Home.route
+                        }
+
+                        navController.navigate(route) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
+
                         loginViewModel.resetState()
                     }
                     else -> {}
@@ -128,8 +130,11 @@ fun AppNavGraph(
         }
 
         composable(Screen.ConfirmInfo.route) {
+            val role by sessionManager.roleFlow.collectAsState(initial = "")
+            val isRecruiter = role == "recruiter"
             ConfirmInfoScreen(
-                navController = navController
+                navController = navController,
+                isRecruiter = isRecruiter
             )
         }
 
@@ -148,10 +153,35 @@ fun AppNavGraph(
                     viewModel = profileViewModel,
                     activity = activity,
                     navController = navController,
-                    sessionManager = AppContainer.sessionManager,
+                    sessionManager = sessionManager,
                     authRepository = AppContainer.authRepository
                 )
             }
+        }
+        composable(Screen.SelectUserType.route) {
+            val viewModel: SelectUserTypeViewModel = viewModel(factory = AppContainer.selectUserTypeViewModelFactory)
+            SelectUserTypeScreen(
+                viewModel = viewModel,
+                onContinue = {
+                    navController.navigate(Screen.ConfirmInfo.route) {
+                        popUpTo(Screen.SelectUserType.route) { inclusive = true }
+                    }
+                },
+                onBack = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.SelectUserType.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(Screen.RecruiterProfile.route) {
+            val viewModel: RecruiterInfoViewModel = viewModel(factory = AppContainer.recruiterInfoViewModelFactory)
+            RecruiterInfoScreen(viewModel = viewModel, navController = navController)
+        }
+
+        // ✅ Màn hình trang chủ nhà tuyển dụng
+        composable(Screen.RecruiterHome.route) {
+            RecruiterHomeScreen(navController = navController)
         }
     }
 }

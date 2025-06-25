@@ -1,6 +1,7 @@
 package com.example.pathfinder.data.model
 
 data class UserProfile(
+    val role: String? = null,
     val uid: String = "", // từ FirebaseAuth
     val fullName: String = "",
     val gender: String = "",

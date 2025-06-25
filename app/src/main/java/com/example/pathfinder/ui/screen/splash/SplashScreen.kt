@@ -25,17 +25,20 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.airbnb.lottie.compose.*
 import com.example.pathfinder.R
+import com.example.pathfinder.data.local.SessionManager
 import com.example.pathfinder.navigation.Screen
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 
 @Composable
-fun SplashScreen(navController: NavController, isLoggedIn: Boolean,
-                 hasProfile: Boolean) {
+fun SplashScreen(navController: NavController, sessionManager: SessionManager) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.office_walk))
     val progress by animateLottieCompositionAsState(
         composition = composition,
         iterations = 1
     )
+
 
     var showSlogan by remember { mutableStateOf(false) }
     var titleVisible by remember { mutableStateOf(false) }
@@ -48,25 +51,41 @@ fun SplashScreen(navController: NavController, isLoggedIn: Boolean,
     val pathfinderFont = FontFamily(Font(R.font.poppins_bold))
     val sloganFont = FontFamily(Font(R.font.greatvibes_regular))
 
-    LaunchedEffect(isLoggedIn, hasProfile) {
-        if (isLoggedIn != null && hasProfile != null) {
-            titleVisible = true
-            delay(800) // Cho animation
-            showSlogan = true
-            delay(3000)
 
-            val nextRoute = when {
-                isLoggedIn!! && hasProfile!! -> Screen.Home.route
-                isLoggedIn!! && !hasProfile!! -> Screen.ConfirmInfo.route
-                else -> Screen.Login.route
-            }
 
-            navController.navigate(nextRoute) {
-                popUpTo(Screen.Splash.route) { inclusive = true }
+    LaunchedEffect(true) {
+        titleVisible = true
+        delay(800)
+        showSlogan = true
+        delay(1000)
+
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+
+        if (firebaseUser != null) {
+            val currentSession = sessionManager.getSession()
+
+            // Nếu đã đăng nhập nhưng local chưa lưu gì, load từ Firestore
+            if (!currentSession.hasProfile) {
+                sessionManager.loadSessionFromFirestore()
             }
         }
-    }
 
+        val session = sessionManager.getSession()
+
+        android.util.Log.d("SplashDebug", "FirebaseUser: $firebaseUser")
+        android.util.Log.d("SplashDebug", "Session from getSession(): $session")
+
+        val route = when {
+            firebaseUser == null || !session.isLoggedIn -> Screen.Login.route
+            session.isLoggedIn && !session.hasProfile -> Screen.SelectUserType.route
+            session.isLoggedIn && session.hasProfile && session.role == "recruiter" -> Screen.RecruiterHome.route
+            else -> Screen.Home.route
+        }
+
+        navController.navigate(route) {
+            popUpTo(Screen.Splash.route) { inclusive = true }
+        }
+    }
 
     Box(
         modifier = Modifier

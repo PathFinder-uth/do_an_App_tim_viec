@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.pathfinder.data.remote.IFirebaseUserService
 import com.example.pathfinder.data.repository.AuthRepository
 import com.example.pathfinder.data.local.SessionManager
+import com.example.pathfinder.di.AppContainer.recruiterService
 
 class LoginViewModelFactory(
     private val authRepository: AuthRepository,
@@ -12,6 +13,6 @@ class LoginViewModelFactory(
     private val sessionManager: SessionManager
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return LoginViewModel(authRepository, userService, sessionManager) as T
+        return LoginViewModel(authRepository, userService, sessionManager,recruiterService) as T
     }
 }

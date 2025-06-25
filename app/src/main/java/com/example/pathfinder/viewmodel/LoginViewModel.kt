@@ -13,11 +13,12 @@ import kotlinx.coroutines.launch
 import com.example.pathfinder.data.remote.IFirebaseUserService
 import com.example.pathfinder.data.model.UserProfile
 import android.content.Context
-
+import com.example.pathfinder.data.remote.IRecruiterService
 class LoginViewModel(
     private val authRepository: AuthRepository,
     private val userService: IFirebaseUserService,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val recruiterService: IRecruiterService
 ) : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
@@ -59,14 +60,44 @@ class LoginViewModel(
         }
     }
     private suspend fun checkIfUserHasProfile(uid: String) {
-        val profileResult = userService.getProfile()
-        val hasProfile = profileResult.isSuccess
-        _loginState.value = if (profileResult.isSuccess) {
-            LoginState.Success(user = authRepository.getCurrentUser()!!, hasProfile = true)
-        } else {
-            LoginState.Success(user = authRepository.getCurrentUser()!!, hasProfile = false)
+        val userResult = userService.getProfile(uid)
+        val userProfile = userResult.getOrNull()
+        val currentUser = authRepository.getCurrentUser()!!
+
+        if (userProfile != null &&
+            userProfile.fullName.isNotBlank() &&
+            userProfile.role == "candidate"
+        ) {
+            sessionManager.saveSession(
+                loggedIn = true,
+                hasProfile = true,
+                role = "candidate"
+            )
+            _loginState.value = LoginState.Success(user = currentUser, hasProfile = true)
+            return
         }
-        sessionManager.saveSession(loggedIn = true, hasProfile = hasProfile)
+
+        val recruiterResult = recruiterService.getRecruiterProfile()
+        val recruiterProfile = recruiterResult.getOrNull()
+        if (recruiterProfile != null &&
+            recruiterProfile.companyName.isNotBlank() &&
+            recruiterProfile.phone.isNotBlank()
+        ) {
+            sessionManager.saveSession(
+                loggedIn = true,
+                hasProfile = true,
+                role = "recruiter"
+            )
+            _loginState.value = LoginState.Success(user = currentUser, hasProfile = true)
+            return
+        }
+
+        sessionManager.saveSession(
+            loggedIn = true,
+            hasProfile = false,
+            role = ""
+        )
+        _loginState.value = LoginState.Success(user = currentUser, hasProfile = false)
     }
     fun resetState() {
         _loginState.value = LoginState.Idle

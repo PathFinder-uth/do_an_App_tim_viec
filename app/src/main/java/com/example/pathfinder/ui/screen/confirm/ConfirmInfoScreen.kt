@@ -16,7 +16,8 @@ import com.example.pathfinder.navigation.Screen
 
 @Composable
 fun ConfirmInfoScreen(
-    navController: NavController
+    navController: NavController,
+    isRecruiter: Boolean
 ) {
     Box(
         modifier = Modifier
@@ -42,7 +43,12 @@ fun ConfirmInfoScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { navController.navigate(Screen.Profile.route) },
+                onClick = {
+                    navController.navigate(
+                        if (isRecruiter) Screen.RecruiterProfile.route
+                        else Screen.Profile.route
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
             ) {
