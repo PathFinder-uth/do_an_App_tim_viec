@@ -24,11 +24,12 @@ class SessionManager(private val context: Context) {
             saveSession(
                 loggedIn = true,
                 hasProfile = hasProfile,
-                role = role
+                role = role,
+                uid = uid
             )
         }
     }
-
+    val UID = stringPreferencesKey("uid")
     companion object {
         val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
         val HAS_PROFILE = booleanPreferencesKey("has_profile")
@@ -47,22 +48,28 @@ class SessionManager(private val context: Context) {
     data class SessionState(
         val isLoggedIn: Boolean,
         val hasProfile: Boolean,
-        val role: String // "recruiter" hoặc "candidate"
+        val role: String, // "recruiter" hoặc "candidate"
+        val uid: String
     )
+
+    val uidFlow: Flow<String> = context.dataStore.data
+        .map { it[UID] ?: "" }
 
     val sessionStateFlow: Flow<SessionState> = combine(
         isLoggedInFlow,
         hasProfileFlow,
-        roleFlow
-    ) { loggedIn, hasProfile, role ->
-        SessionState(loggedIn, hasProfile, role)
+        roleFlow,
+        uidFlow
+    ) { loggedIn, hasProfile, role, uid ->
+        SessionState(loggedIn, hasProfile, role, uid)
     }
 
-    suspend fun saveSession(loggedIn: Boolean, hasProfile: Boolean, role: String) {
+    suspend fun saveSession(loggedIn: Boolean, hasProfile: Boolean, role: String, uid: String) {
         context.dataStore.edit { preferences ->
             preferences[IS_LOGGED_IN] = loggedIn
             preferences[HAS_PROFILE] = hasProfile
             preferences[ROLE] = role
+            preferences[UID] = uid
         }
     }
 
@@ -71,7 +78,8 @@ class SessionManager(private val context: Context) {
         return SessionState(
             isLoggedIn = data[IS_LOGGED_IN] ?: false,
             hasProfile = data[HAS_PROFILE] ?: false,
-            role = data[ROLE] ?: ""
+            role = data[ROLE] ?: "",
+            uid = data[UID] ?: ""
         )
     }
 

@@ -60,7 +60,7 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
                         contact = it.contact,
                         avatarUrl = it.avatarUrl,
                         message = "",
-
+                        isPremium = it.isPremium,
                     )
                 }.onFailure {
                     _uiState.value = _uiState.value.copy(message = it.message ?: "Đã xảy ra lỗi")
@@ -88,7 +88,8 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
                 birthday = _uiState.value.birthday,
                 contact = _uiState.value.contact,
                 avatarUrl = _uiState.value.avatarUrl,
-                role = "candidate"
+                role = "candidate",
+                isPremium = _uiState.value.isPremium
             )
 
             val result = repository.updateUserProfile(profile)
@@ -97,7 +98,10 @@ class ProfileViewModel(private val repository: ProfileRepository) : ViewModel() 
                 sessionManager.saveSession(
                     loggedIn = true,
                     hasProfile = true,
-                    role = "candidate"
+                    role = "candidate",
+                    uid = uid
+
+
                 )
                 _uiState.value = _uiState.value.copy(message = "Cập nhật thành công")
                 _isSubmitted.value = true // ✅ giúp chuyển hướng về Home

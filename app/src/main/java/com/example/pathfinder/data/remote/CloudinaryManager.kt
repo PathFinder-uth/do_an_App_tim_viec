@@ -17,7 +17,7 @@ object CloudinaryManager {
             val config = mapOf(
                 "cloud_name" to "dvf4con0g",
                 "api_key" to "899335978917755",
-                "api_secret" to "X9qLi-rZKm6_NcxV75Uru0Sn1vo"
+
             )
             MediaManager.init(context, config)
             isInitialized = true
@@ -26,7 +26,8 @@ object CloudinaryManager {
 
     suspend fun uploadImage(uri: Uri): String = suspendCancellableCoroutine { continuation ->
         MediaManager.get().upload(uri)
-            .option("folder", "avatars/")
+            .unsigned("ml_default")
+            .option("folder", "avatars/",)
             .callback(object : UploadCallback {
                 override fun onStart(requestId: String?) {}
 
@@ -42,6 +43,29 @@ object CloudinaryManager {
                     continuation.resumeWithException(Exception(error?.description))
                 }
 
+                override fun onReschedule(requestId: String?, error: ErrorInfo?) {
+                    continuation.resumeWithException(Exception(error?.description))
+                }
+            }).dispatch()
+
+    }
+    suspend fun uploadPdf(uri: Uri): String = suspendCancellableCoroutine { continuation ->
+        // SỬA LẠI ĐỂ DÙNG PRESET MỚI, CÔNG KHAI
+        MediaManager.get().upload(uri)
+            .unsigned("pdf_public_preset")
+            .option("resource_type", "raw") // <<-- THÊM DÒNG NÀY
+            .option("folder", "pdfs/")
+            .callback(object : UploadCallback {
+                override fun onStart(requestId: String?) {}
+                override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
+                override fun onSuccess(requestId: String?, resultData: MutableMap<Any?, Any?>?) {
+                    val url = resultData?.get("secure_url") as? String
+                    if (url != null) continuation.resume(url)
+                    else continuation.resumeWithException(Exception("Failed to get URL"))
+                }
+                override fun onError(requestId: String?, error: ErrorInfo?) {
+                    continuation.resumeWithException(Exception(error?.description))
+                }
                 override fun onReschedule(requestId: String?, error: ErrorInfo?) {
                     continuation.resumeWithException(Exception(error?.description))
                 }

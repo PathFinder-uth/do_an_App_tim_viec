@@ -19,9 +19,10 @@ import coil.compose.rememberAsyncImagePainter
 
 @Composable
 fun RecruiterDrawerContent(
+    recruiterId: String, // 🆕 Thêm vào đây
     companyName: String,
     logoUrl: String,
-    onMenuClick: (String) -> Unit
+    onMenuClick: (String, recruiterId: String, companyName: String, logoUrl: String) -> Unit // 🆕 Đổi callback để truyền đủ
 ) {
     Column(
         modifier = Modifier
@@ -49,7 +50,7 @@ fun RecruiterDrawerContent(
 
         val items = listOf(
             "Thông tin tài khoản" to Icons.Default.Person,
-            "+ Tạo bài đăng tuyển dụng mới" to Icons.Default.Add,
+            "Tạo bài đăng tuyển dụng mới" to Icons.Default.Add,
             "Xem danh sách bài đăng đã đào tạo" to Icons.Default.School,
             "Xem danh sách ứng viên đã nộp đơn" to Icons.Default.CheckCircle,
             "Hỗ trợ" to Icons.Default.Help,
@@ -59,7 +60,9 @@ fun RecruiterDrawerContent(
 
         items.forEach { (label, icon) ->
             Button(
-                onClick = { onMenuClick(label) },
+                onClick = {
+                    onMenuClick(label, recruiterId, companyName, logoUrl) // 🆕 Truyền đủ tham số
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp),

@@ -71,7 +71,8 @@ class LoginViewModel(
             sessionManager.saveSession(
                 loggedIn = true,
                 hasProfile = true,
-                role = "candidate"
+                role = "candidate",
+                uid = currentUser.uid
             )
             _loginState.value = LoginState.Success(user = currentUser, hasProfile = true)
             return
@@ -86,7 +87,8 @@ class LoginViewModel(
             sessionManager.saveSession(
                 loggedIn = true,
                 hasProfile = true,
-                role = "recruiter"
+                role = "recruiter",
+                        uid = currentUser.uid
             )
             _loginState.value = LoginState.Success(user = currentUser, hasProfile = true)
             return
@@ -95,7 +97,8 @@ class LoginViewModel(
         sessionManager.saveSession(
             loggedIn = true,
             hasProfile = false,
-            role = ""
+            role = "",
+            uid = currentUser.uid
         )
         _loginState.value = LoginState.Success(user = currentUser, hasProfile = false)
     }

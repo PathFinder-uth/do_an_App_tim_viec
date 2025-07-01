@@ -12,6 +12,8 @@ firebaseAuthKtx = "23.2.1"
 navigationRuntimeAndroid = "2.9.0"
 navigationComposeAndroid = "2.9.0"
 firebaseFirestoreKtx = "25.1.4"
+playServicesAppsearch = "16.0.1"
+runtimeLivedata = "1.8.3"
 
 
 [libraries]
@@ -33,6 +35,8 @@ firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx",
 androidx-navigation-runtime-android = { group = "androidx.navigation", name = "navigation-runtime-android", version.ref = "navigationRuntimeAndroid" }
 androidx-navigation-compose-android = { group = "androidx.navigation", name = "navigation-compose-android", version.ref = "navigationComposeAndroid" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
+play-services-appsearch = { group = "com.google.android.gms", name = "play-services-appsearch", version.ref = "playServicesAppsearch" }
+androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

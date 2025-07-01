@@ -35,7 +35,8 @@ class SelectUserTypeViewModel(
                 sessionManager.saveSession(
                     loggedIn = currentSession.isLoggedIn,
                     hasProfile = false,
-                    role = role
+                    role = role,
+                    uid = uid
                 )
 
                 _uiState.value = SelectUserTypeState.Success(role)

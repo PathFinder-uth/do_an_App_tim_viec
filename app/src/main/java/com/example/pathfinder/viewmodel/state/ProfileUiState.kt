@@ -11,5 +11,6 @@ data class ProfileUiState(
     val contact: String = "",
     val avatarUrl: String = "",
     val tempAvatarUri: Uri? = null,
-    val message: String = ""
+    val message: String = "",
+    val isPremium: Boolean = false,
 )

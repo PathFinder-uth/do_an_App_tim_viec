@@ -99,7 +99,8 @@ class RecruiterInfoViewModel(
                 sessionManager.saveSession(
                     loggedIn = true,
                     hasProfile = true,
-                    role = "recruiter"
+                    role = "recruiter",
+                    uid = uid
                 )
                 _uiState.value = _uiState.value.copy(isSubmitted = true)
             }
@@ -148,6 +149,13 @@ class RecruiterInfoViewModel(
             profileRepository.getRecruiterProfile().onSuccess { profile ->
                 _uiState.value = _uiState.value.copy(
                     companyName = profile.companyName,
+                    companyDescription = profile.description,
+                    companyAddress = profile.address,
+                    phoneNumber = profile.phone,
+                    email = profile.email,
+                    website = profile.website,
+                    industry = profile.industry,
+                    companySize = profile.companySize,
                     logoUrl = profile.logoUrl
                 )
             }

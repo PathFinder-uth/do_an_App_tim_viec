@@ -17,13 +17,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.pathfinder.navigation.Screen
 
 @Composable
 fun DrawerContent(
     fullName: String,
     avatarUrl: String,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    navController: NavController
 ) {
     Column(
         modifier = Modifier
@@ -51,7 +54,6 @@ fun DrawerContent(
 
         val items = listOf(
             "Thông tin tài khoản" to Icons.Default.Person,
-            "Tạo CV" to Icons.Default.Create,
             "Thông báo tuyển dụng" to Icons.Default.Notifications,
             "Đơn đã nộp" to Icons.Default.CheckCircle,
             "Danh sách lưu" to Icons.Default.Star,
@@ -64,8 +66,15 @@ fun DrawerContent(
         items.forEach { (label, icon) ->
             Button(
                 onClick = {
-                    if (label == "Đăng xuất") onLogout()
-                    else {} // TODO: Implement actions
+                    when (label) {
+                        "Đăng xuất" -> onLogout()
+                        "Thông tin tài khoản" -> navController.navigate("candidate_detail")
+                        "Danh sách lưu" -> navController.navigate(Screen.SavedJobs.route) // Điều hướng đến SavedJobsScreen// hoặc Screen.CandidateDetail.route
+                        "Đơn đã nộp" -> navController.navigate(Screen.SubmittedJobs.route)
+                        "Thông báo tuyển dụng" -> navController.navigate(Screen.Notifications.route)
+                        "Mua gói" -> navController.navigate(Screen.Premium.route)
+                        else -> {} // TODO: Other actions
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()

@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -17,11 +18,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.pathfinder.data.local.SessionManager
 import com.example.pathfinder.data.repository.AuthRepository
+import com.example.pathfinder.di.AppContainer
 import com.example.pathfinder.navigation.Screen
+import com.example.pathfinder.ui.component.JobCardSkeleton
 import com.example.pathfinder.ui.component.RecruiterDrawerContent
+import com.example.pathfinder.ui.screen.job.JobCard
+import com.example.pathfinder.viewmodel.JobViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,6 +43,15 @@ fun RecruiterHomeScreen(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var showExitDialog by remember { mutableStateOf(false) }
+    val jobViewModel: JobViewModel = viewModel(factory = AppContainer.jobViewModelFactory)
+    val jobState by jobViewModel.uiState.collectAsState()
+    var recruiterId by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        val session = sessionManager.getSession()
+        recruiterId = session.uid
+        jobViewModel.fetchJobsByRecruiter(recruiterId)
+    }
 
     BackHandler {
         showExitDialog = true
@@ -62,27 +77,38 @@ fun RecruiterHomeScreen(
 
     ModalNavigationDrawer(
         drawerContent = {
+            // ✅ Truyền recruiterId, companyName, logoUrl đúng vào drawer
             RecruiterDrawerContent(
+                recruiterId = recruiterId,
                 companyName = companyName,
                 logoUrl = logoUrl,
-                onMenuClick = { label ->
+                onMenuClick = { label, id, name, logo ->
                     when (label) {
-                        "Thông tin tài khoản" -> navController.navigate(Screen.RecruiterProfile.route)
-                        "+ Tạo bài đăng tuyển dụng mới" -> {
-                            // TODO: Điều hướng đến màn hình tạo bài đăng
+                        "Thông tin tài khoản" -> {
+                            navController.navigate(Screen.RecruiterDetail.route)
                         }
+                        "Tạo bài đăng tuyển dụng mới" -> {
+                            navController.navigate(
+                                Screen.JobForm.withArgs(id, name, logo)
+                            )
+                        }
+
                         "Xem danh sách bài đăng đã đào tạo" -> {
                             // TODO: Điều hướng đến màn danh sách bài đăng
                         }
+
                         "Xem danh sách ứng viên đã nộp đơn" -> {
-                            // TODO: Điều hướng đến danh sách ứng viên
+                            navController.navigate(Screen.RecruiterJobSelection.route)
                         }
+
                         "Hỗ trợ" -> {
                             // TODO: Mở support (hoặc external link)
                         }
+
                         "Cài đặt" -> {
                             // TODO: Mở màn hình cài đặt nếu có
                         }
+
                         "Đăng xuất" -> {
                             scope.launch {
                                 authRepository.logout()
@@ -133,19 +159,34 @@ fun RecruiterHomeScreen(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = "Danh sách công việc",
+                        text = "Danh sách công việc đã đăng",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
+                }
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(400.dp)
-                            .background(Color.White, RoundedCornerShape(8.dp))
-                    )
+                when {
+                    jobState.isLoading -> {
+                        items(5) {
+                            JobCardSkeleton()
+                        }
+                    }
+
+                    jobState.jobs.isEmpty() -> {
+                        item {
+                            Text("Chưa có bài đăng nào.", color = Color.Gray)
+                        }
+                    }
+
+                    else -> {
+                        items(jobState.jobs) { job ->
+                            JobCard(job = job, onClick = {
+                                // TODO: Điều hướng hoặc xử lý khi click card
+                            })
+                        }
+                    }
                 }
             }
         }
