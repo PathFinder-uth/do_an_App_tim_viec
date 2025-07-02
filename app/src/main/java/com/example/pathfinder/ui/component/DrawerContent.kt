@@ -73,6 +73,8 @@ fun DrawerContent(
                         "Đơn đã nộp" -> navController.navigate(Screen.SubmittedJobs.route)
                         "Thông báo tuyển dụng" -> navController.navigate(Screen.Notifications.route)
                         "Mua gói" -> navController.navigate(Screen.Premium.route)
+                        "Hỗ trợ" ->  navController.navigate(Screen.Support.route)
+                        "Cài đặt" -> navController.navigate(Screen.Settings.route)
                         else -> {} // TODO: Other actions
                     }
                 },

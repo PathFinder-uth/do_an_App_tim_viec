@@ -40,7 +40,7 @@ class JobViewModel(
 
     fun fetchAllJobs() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.value = _uiState.value.copy(isLoading = true, jobs = emptyList())
             jobRepository.getAllJobs().collect { result ->
                 val now = System.currentTimeMillis()
                 if (result.isSuccess) {
@@ -55,11 +55,13 @@ class JobViewModel(
 
     fun filterJobsByCategory(category: String) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            // Lắng nghe dữ liệu từ hàm lọc mới
+            // Xóa danh sách cũ và hiển thị loading ngay lập tức
+            _uiState.value = _uiState.value.copy(isLoading = true, jobs = emptyList())
             jobRepository.getJobsByCategory(category).collect { result ->
+                val now = System.currentTimeMillis()
                 if (result.isSuccess) {
-                    _uiState.value = _uiState.value.copy(jobs = result.getOrDefault(emptyList()), isLoading = false)
+                    val filteredJobs = result.getOrDefault(emptyList()).filter { it.deadline > now }
+                    _uiState.value = _uiState.value.copy(jobs = filteredJobs, isLoading = false)
                 } else {
                     _uiState.value = _uiState.value.copy(error = result.exceptionOrNull()?.message, isLoading = false)
                 }
@@ -69,7 +71,7 @@ class JobViewModel(
 
     fun fetchJobsByRecruiter(recruiterId: String) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.value = _uiState.value.copy(isLoading = true, jobs = emptyList())
             jobRepository.getJobsByRecruiter(recruiterId).collect { result ->
                 val now = System.currentTimeMillis()
                 if (result.isSuccess) {
@@ -138,7 +140,33 @@ class JobViewModel(
         }
     }
 
+    fun deleteJobs(jobIds: List<String>) {
+        viewModelScope.launch {
+            jobIds.forEach { jobId ->
+                jobRepository.deleteJob(jobId)
+            }
+            // Sau khi xóa, không cần làm gì thêm vì Real-time listener sẽ tự động cập nhật danh sách
+        }
+    }
 
+    fun updateJob(job: Job) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, isSuccess = false)
+            val result = jobRepository.updateJob(job)
+            _uiState.value = when {
+                result.isSuccess -> _uiState.value.copy(
+                    isLoading = false,
+                    isSuccess = true, // Đặt cờ thành công để điều hướng
+                    error = null
+                )
+                else -> _uiState.value.copy(
+                    isLoading = false,
+                    isSuccess = false,
+                    error = result.exceptionOrNull()?.message
+                )
+            }
+        }
+    }
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
     }

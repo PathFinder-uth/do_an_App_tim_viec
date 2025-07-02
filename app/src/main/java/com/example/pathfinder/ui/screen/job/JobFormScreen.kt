@@ -2,6 +2,7 @@ package com.example.pathfinder.ui.screen.job
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -23,9 +24,10 @@ import java.util.Locale
 fun JobFormScreen(
     viewModel: JobViewModel,
     navController: NavController,
-    recruiterId: String,
-    companyName: String,
-    logoUrl: String
+    recruiterId: String?,
+    companyName: String?,
+    logoUrl: String?,
+    jobIdToEdit: String?
 ) {
     // State cho các trường nhập liệu
     var title by remember { mutableStateOf("") }
@@ -43,10 +45,12 @@ fun JobFormScreen(
     val jobTypes = listOf("free", "premium")
     var selectedJobType by remember { mutableStateOf(jobTypes[0]) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
+    var isTypeDropdownExpanded by remember { mutableStateOf(false) }
 
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-
+    val isEditMode = jobIdToEdit != null
+    val jobToEdit by viewModel.uiState.collectAsState()
     val jobCategories = listOf(
         "Marketing", "Accountant", "Auditor", "Software Engineer",
         "UI/UX Designer", "Project Manager", "Sales Representative",
@@ -54,164 +58,196 @@ fun JobFormScreen(
     )
     var selectedCategory by remember { mutableStateOf(jobCategories[0]) }
     var isCategoryDropdownExpanded by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsState()
+    LaunchedEffect(jobIdToEdit) {
+        if (isEditMode) {
+            viewModel.getJobDetail(jobIdToEdit!!)
+        }
+    }
 
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()), // Thêm thanh cuộn
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        OutlinedTextField(
-            value = title,
-            onValueChange = { title = it },
-            label = { Text("Tiêu đề công việc") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Mô tả công việc") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 3
-        )
-        OutlinedTextField(
-            value = requirements,
-            onValueChange = { requirements = it },
-            label = { Text("Yêu cầu ứng viên") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 3
-        )
-        OutlinedTextField(
-            value = salary,
-            onValueChange = { salary = it },
-            label = { Text("Mức lương") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = location,
-            onValueChange = { location = it },
-            label = { Text("Địa điểm làm việc") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = type,
-            onValueChange = { type = it },
-            label = { Text("Hình thức làm việc (Full-time, Part-time,... )") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        ExposedDropdownMenuBox(
-            expanded = isCategoryDropdownExpanded,
-            // SỬA LỖI: Thay đổi logic để bật/tắt dropdown một cách chính xác
-            onExpandedChange = { isCategoryDropdownExpanded = !isCategoryDropdownExpanded },
-            modifier = Modifier.padding(top = 8.dp)
-        ) {
-            OutlinedTextField(
-                value = selectedCategory,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Ngành nghề") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isCategoryDropdownExpanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor() // Quan trọng: để liên kết TextField với Menu
-            )
-            ExposedDropdownMenu(
-                expanded = isCategoryDropdownExpanded,
-                onDismissRequest = { isCategoryDropdownExpanded = false }
-            ) {
-                jobCategories.forEach { categoryValue ->
-                    DropdownMenuItem(
-                        text = { Text(categoryValue) },
-                        onClick = {
-                            selectedCategory = categoryValue
-                            isCategoryDropdownExpanded = false
-                        }
-                    )
-                }
+    // Điền dữ liệu cũ vào form khi đã tải xong
+    LaunchedEffect(uiState.selectedJob) {
+        if (isEditMode) {
+            uiState.selectedJob?.let { job ->
+                title = job.title
+                description = job.description
+                requirements = job.requirements
+                salary = job.salary
+                location = job.location
+                type = job.type
+                deadlineMillis = job.deadline
+                selectedJobType = job.jobType
+                selectedCategory = job.category
             }
         }
-        // --- DROPDOWN CHỌN LOẠI CÔNG VIỆC ---
-        ExposedDropdownMenuBox(
-            expanded = isDropdownExpanded,
-            onExpandedChange = { isDropdownExpanded = !isDropdownExpanded },
-            modifier = Modifier.padding(top = 8.dp)
-        ) {
-            OutlinedTextField(
-                value = selectedJobType.replaceFirstChar { it.uppercase() },
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Loại công việc") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropdownExpanded) },
-                modifier = Modifier.fillMaxWidth().menuAnchor()
+    }
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
+            delay(1000)
+            navController.popBackStack()
+            viewModel.clearSuccessFlag() // Reset cờ để không bị lặp lại
+        }
+    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(if (isEditMode) "Chỉnh sửa công việc" else "Tạo công việc mới") }
             )
-            ExposedDropdownMenu(
-                expanded = isDropdownExpanded,
-                onDismissRequest = { isDropdownExpanded = false }
-            ) {
-                jobTypes.forEach { typeValue ->
-                    DropdownMenuItem(
-                        text = { Text(typeValue.replaceFirstChar { it.uppercase() }) },
-                        onClick = {
-                            selectedJobType = typeValue
-                            isDropdownExpanded = false
-                        }
-                    )
-                }
-            }
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedButton(
-            onClick = { showDatePicker = true },
-            modifier = Modifier.fillMaxWidth()
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp) // Khoảng cách giữa các item
         ) {
-            Text("Chọn hạn nộp: ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(deadlineMillis))}")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                val job = Job(
-                    recruiterId = recruiterId,
-                    title = title,
-                    description = description,
-                    requirements = requirements,
-                    salary = salary,
-                    location = location,
-                    type = type,
-                    companyName = companyName,
-                    logoUrl = logoUrl,
-                    createdAt = System.currentTimeMillis(),
-                    deadline = deadlineMillis,
-                    jobType = selectedJobType,
-                    category = selectedCategory
+            // Mỗi thành phần giao diện giờ được đặt trong một item()
+            item {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Tiêu đề công việc") },
+                    modifier = Modifier.fillMaxWidth()
                 )
-                viewModel.createJob(job)
-            },
-            modifier = Modifier.fillMaxWidth().height(48.dp)
-        ) {
-            Text("Tạo công việc")
-        }
-
-        if (state.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.padding(top = 8.dp))
-        }
-
-        if (state.isSuccess) {
-            Text("Tạo công việc thành công!", color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 8.dp))
-            LaunchedEffect(true) {
-                delay(1500)
-                navController.popBackStack()
             }
-        }
-
-        state.error?.let {
-            Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
+            item {
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Mô tả công việc") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3
+                )
+            }
+            item {
+                OutlinedTextField(
+                    value = requirements,
+                    onValueChange = { requirements = it },
+                    label = { Text("Yêu cầu ứng viên") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3
+                )
+            }
+            item {
+                OutlinedTextField(value = salary, onValueChange = { salary = it }, label = { Text("Mức lương") }, modifier = Modifier.fillMaxWidth())
+            }
+            item {
+                OutlinedTextField(value = location, onValueChange = { location = it }, label = { Text("Địa điểm làm việc") }, modifier = Modifier.fillMaxWidth())
+            }
+            item {
+                OutlinedTextField(value = type, onValueChange = { type = it }, label = { Text("Hình thức làm việc (Full-time, Part-time,... )") }, modifier = Modifier.fillMaxWidth())
+            }
+            item {
+                ExposedDropdownMenuBox(
+                    expanded = isCategoryDropdownExpanded,
+                    onExpandedChange = { isCategoryDropdownExpanded = !it }
+                ) {
+                    OutlinedTextField(
+                        value = selectedCategory,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Ngành nghề") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isCategoryDropdownExpanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = isCategoryDropdownExpanded,
+                        onDismissRequest = { isCategoryDropdownExpanded = false }
+                    ) {
+                        jobCategories.forEach { categoryValue ->
+                            DropdownMenuItem(
+                                text = { Text(categoryValue) },
+                                onClick = {
+                                    selectedCategory = categoryValue
+                                    isCategoryDropdownExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+            item {
+                ExposedDropdownMenuBox(
+                    expanded = isTypeDropdownExpanded,
+                    onExpandedChange = { isTypeDropdownExpanded = !it }
+                ) {
+                    OutlinedTextField(
+                        value = selectedJobType.replaceFirstChar { it.uppercase() },
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Loại công việc") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isTypeDropdownExpanded) },
+                        modifier = Modifier.fillMaxWidth().menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = isTypeDropdownExpanded,
+                        onDismissRequest = { isTypeDropdownExpanded = false }
+                    ) {
+                        jobTypes.forEach { typeValue ->
+                            DropdownMenuItem(
+                                text = { Text(typeValue.replaceFirstChar { it.uppercase() }) },
+                                onClick = {
+                                    selectedJobType = typeValue
+                                    isTypeDropdownExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+            item {
+                OutlinedButton(
+                    onClick = { showDatePicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Chọn hạn nộp: ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(deadlineMillis))}")
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        val jobData = Job(
+                            id = jobIdToEdit ?: "",
+                            recruiterId = if (isEditMode) uiState.selectedJob?.recruiterId ?: "" else recruiterId ?: "",
+                            title = title,
+                            description = description,
+                            requirements = requirements,
+                            salary = salary,
+                            location = location,
+                            type = type,
+                            companyName = if (isEditMode) uiState.selectedJob?.companyName ?: "" else companyName ?: "",
+                            logoUrl = if (isEditMode) uiState.selectedJob?.logoUrl ?: "" else logoUrl ?: "",
+                            createdAt = if (isEditMode) uiState.selectedJob?.createdAt ?: System.currentTimeMillis() else System.currentTimeMillis(),
+                            deadline = deadlineMillis,
+                            jobType = selectedJobType,
+                            category = selectedCategory
+                        )
+                        if (isEditMode) {
+                            viewModel.updateJob(jobData)
+                        } else {
+                            viewModel.createJob(jobData)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                ) {
+                    Text(if (isEditMode) "Cập nhật công việc" else "Tạo công việc")
+                }
+            }
+            item {
+                if (uiState.isLoading) {
+                    CircularProgressIndicator()
+                }
+                if (uiState.isSuccess) {
+                    Text("Thao tác thành công!", color = MaterialTheme.colorScheme.primary)
+                }
+                uiState.error?.let {
+                    Text(it, color = MaterialTheme.colorScheme.error)
+                }
+            }
         }
     }
 

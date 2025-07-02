@@ -39,6 +39,16 @@ data class UserProfile(
     var fcmToken: String = "",
 
     @get:PropertyName("isPremium") @set:PropertyName("isPremium")
-    var isPremium: Boolean = false // Mặc định là người dùng thường
+    var isPremium: Boolean = false, // Mặc định là người dùng thường
+
+    @get:PropertyName("pushNotificationsEnabled") @set:PropertyName("pushNotificationsEnabled")
+    var pushNotificationsEnabled: Boolean = true, // Mặc định là bật
+
+    @get:PropertyName("emailNotificationsEnabled") @set:PropertyName("emailNotificationsEnabled")
+    var emailNotificationsEnabled: Boolean = true, // Mặc định là bật
+
+    // Cài đặt giao diện
+    @get:PropertyName("darkModePreference") @set:PropertyName("darkModePreference")
+    var darkModePreference: String = "system" // Các giá trị: "light", "dark", "system"
 
 )

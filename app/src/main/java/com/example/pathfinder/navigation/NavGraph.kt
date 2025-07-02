@@ -10,8 +10,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.pathfinder.di.AppContainer
 import com.example.pathfinder.di.AppContainer.sessionManager
 import com.example.pathfinder.services.MyFirebaseMessagingService
@@ -34,6 +36,7 @@ import com.example.pathfinder.ui.screen.job.JobFormScreen
 import com.example.pathfinder.ui.screen.job.JobScreen
 import com.example.pathfinder.ui.screen.job.JobSearchScreen
 import com.example.pathfinder.ui.screen.job.RecruiterJobSelectionScreen
+import com.example.pathfinder.ui.screen.job.RecruiterManageJobsScreen
 import com.example.pathfinder.ui.screen.job.SavedJobsScreen
 import com.example.pathfinder.ui.screen.job.SubmittedJobsScreen
 import com.example.pathfinder.ui.screen.notification.NotificationsScreen
@@ -44,13 +47,16 @@ import com.example.pathfinder.ui.screen.recruiter.RecruiterProfileDetailScreen
 import com.example.pathfinder.ui.screen.recruiter.RecruiterUpdateInfoScreen
 import com.example.pathfinder.ui.screen.recruiterhome.RecruiterHomeScreen
 import com.example.pathfinder.ui.screen.splash.SplashScreen
+import com.example.pathfinder.ui.screen.support.SupportScreen
 import com.example.pathfinder.viewmodel.SelectUserTypeViewModel
 import com.example.pathfinder.ui.screen.select.SelectUserTypeScreen
+import com.example.pathfinder.ui.screen.settings.SettingsScreen
 import com.example.pathfinder.viewmodel.JobDatabaseViewModel
 import com.example.pathfinder.viewmodel.JobSearchViewModel
 import com.example.pathfinder.viewmodel.JobViewModel
 import com.example.pathfinder.viewmodel.RecruiterInfoViewModel
 import com.example.pathfinder.viewmodel.state.LoginState
+import com.example.pathfinder.viewmodel.SettingsViewModel
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
@@ -66,8 +72,13 @@ sealed class Screen(val route: String) {
     object RecruiterHome : Screen("recruiter_home")
     object JobList : Screen("job_list")
     object JobForm : Screen("job_form") {
-        fun withArgs(recruiterId: String, companyName: String, logoUrl: String): String {
-            return "job_form/${Uri.encode(recruiterId)}/${Uri.encode(companyName)}/${Uri.encode(logoUrl)}"
+        // Route cho việc tạo mới
+        fun withCreateArgs(recruiterId: String, companyName: String, logoUrl: String): String {
+            return "job_form?recruiterId=${Uri.encode(recruiterId)}&companyName=${Uri.encode(companyName)}&logoUrl=${Uri.encode(logoUrl)}"
+        }
+        // Route cho việc chỉnh sửa
+        fun withEditArgs(jobId: String): String {
+            return "job_form?jobId=${Uri.encode(jobId)}"
         }
     }
     object JobDetail : Screen("job_detail") {
@@ -86,12 +97,16 @@ sealed class Screen(val route: String) {
     object RecruiterJobSelection : Screen("recruiter_job_selection")
     object Notifications : Screen("notifications")
     object Premium : Screen("premium")
+    object Support : Screen("support")
+    object Settings : Screen("settings")
+    object RecruiterManageJobs : Screen("recruiter_manage_jobs")
 }
 
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    settingsViewModel: SettingsViewModel,
 ) {
     NavHost(
         navController = navController,
@@ -221,6 +236,9 @@ fun AppNavGraph(
             RecruiterInfoScreen(viewModel = viewModel, navController = navController)
         }
 
+        composable(Screen.RecruiterManageJobs.route) {
+            RecruiterManageJobsScreen(navController = navController)
+        }
         // ✅ Màn hình trang chủ nhà tuyển dụng
         composable(Screen.RecruiterHome.route) {
             val viewModel: RecruiterInfoViewModel = viewModel(factory = AppContainer.recruiterInfoViewModelFactory)
@@ -276,7 +294,13 @@ fun AppNavGraph(
             // Truyền jobDatabaseViewModel vào SavedJobsScreen
             SavedJobsScreen(navController = navController, )
         }
-
+        composable(Screen.Settings.route) {
+            // Truyền ViewModel đã có sẵn vào màn hình
+            SettingsScreen(
+                navController = navController,
+                viewModel = settingsViewModel
+            )
+        }
         composable(Screen.SubmittedJobs.route) {
             val jobDatabaseViewModel: JobDatabaseViewModel = viewModel(factory = AppContainer.jobDatabaseViewModelFactory)
 
@@ -289,7 +313,9 @@ fun AppNavGraph(
                 }
             )
         }
-
+        composable(Screen.Support.route) {
+            SupportScreen(navController = navController)
+        }
         composable(Screen.ApplicantJobs.route) { backStackEntry ->
             val jobId = backStackEntry.arguments?.getString("jobId") ?: ""
             ApplicantJobsScreen(jobId = jobId, navController = navController)
@@ -297,22 +323,43 @@ fun AppNavGraph(
         composable(Screen.RecruiterJobSelection.route) {
             RecruiterJobSelectionScreen(navController = navController)
         }
-        composable(
-            route = "job_form/{recruiterId}/{companyName}/{logoUrl}"
-        ) { backStackEntry ->
-            val recruiterId = Uri.decode(backStackEntry.arguments?.getString("recruiterId") ?: "")
-            val companyName = Uri.decode(backStackEntry.arguments?.getString("companyName") ?: "")
-            val logoUrl = Uri.decode(backStackEntry.arguments?.getString("logoUrl") ?: "")
 
+        composable(
+            // Định nghĩa route với các tham số tùy chọn (optional arguments)
+            route = "job_form?recruiterId={recruiterId}&companyName={companyName}&logoUrl={logoUrl}&jobId={jobId}",
+            // Khai báo chi tiết các tham số để NavController hiểu
+            arguments = listOf(
+                navArgument("recruiterId") {
+                    type = NavType.StringType
+                    nullable = true // Cho phép giá trị null
+                    defaultValue = null
+                },
+                navArgument("companyName") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("logoUrl") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("jobId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) { backStackEntry ->
             JobFormScreen(
-                recruiterId = recruiterId,
-                companyName = companyName,
-                logoUrl = logoUrl,
+                recruiterId = backStackEntry.arguments?.getString("recruiterId"),
+                companyName = backStackEntry.arguments?.getString("companyName"),
+                logoUrl = backStackEntry.arguments?.getString("logoUrl"),
+                jobIdToEdit = backStackEntry.arguments?.getString("jobId"),
                 viewModel = viewModel(factory = AppContainer.jobViewModelFactory),
                 navController = navController
             )
         }
-
         composable("job_detail/{jobId}") { backStackEntry ->
             val jobId = backStackEntry.arguments?.getString("jobId") ?: ""
             val viewModel: JobViewModel = viewModel(factory = AppContainer.jobViewModelFactory)

@@ -157,7 +157,24 @@ class FirebaseJobServiceImpl(
         }
         awaitClose { listener.remove() }
     }
+    override suspend fun deleteJob(jobId: String): Result<Unit> {
+        return try {
+            jobsCollection.document(jobId).delete().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
+    override suspend fun updateJob(job: Job): Result<Unit> {
+        return try {
+            // Dùng set với merge=true để chỉ cập nhật các trường được thay đổi
+            jobsCollection.document(job.id).set(job, com.google.firebase.firestore.SetOptions.merge()).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
     override suspend fun getJobById(jobId: String): Result<Job> {
         // Hàm này giữ nguyên
         return try {

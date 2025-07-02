@@ -26,4 +26,11 @@ class JobRepository(
     suspend fun getJobById(jobId: String): Result<Job> {
         return jobService.getJobById(jobId)
     }
+    suspend fun deleteJob(jobId: String): Result<Unit> {
+        return jobService.deleteJob(jobId)
+    }
+
+    suspend fun updateJob(job: Job): Result<Unit> {
+        return jobService.updateJob(job)
+    }
 }

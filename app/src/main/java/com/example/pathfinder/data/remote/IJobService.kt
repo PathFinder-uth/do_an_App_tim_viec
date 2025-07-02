@@ -10,4 +10,6 @@ interface IJobService {
     fun getJobsByRecruiter(recruiterId: String): Flow<Result<List<Job>>>
     suspend fun getJobById(jobId: String): Result<Job>
     fun getJobsByCategory(category: String): Flow<Result<List<Job>>>
+    suspend fun deleteJob(jobId: String): Result<Unit>
+    suspend fun updateJob(job: Job): Result<Unit>
 }

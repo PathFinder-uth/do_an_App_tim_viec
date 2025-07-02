@@ -230,7 +230,7 @@ fun HomeScreen(viewModel: ProfileViewModel, activity: ComponentActivity, navCont
                 // --- ĐÃ SỬA LẠI CẤU TRÚC KHỐI NÀY ---
                 if (jobState.isLoading) {
                     // Hiển thị 5 skeleton card khi đang tải
-                    items(5) {
+                    items(10) {
                         JobCardSkeleton()
                         Spacer(modifier = Modifier.height(12.dp))
                     }
@@ -244,7 +244,7 @@ fun HomeScreen(viewModel: ProfileViewModel, activity: ComponentActivity, navCont
                     }
                 } else {
                     // Sử dụng items để hiển thị danh sách công việc
-                    items(jobState.jobs.take(5)) { job ->
+                    items(jobState.jobs.take(10)) { job ->
                         JobCardForCandidate(
                             job = job,
                             isPremiumUser = isUserPremium,

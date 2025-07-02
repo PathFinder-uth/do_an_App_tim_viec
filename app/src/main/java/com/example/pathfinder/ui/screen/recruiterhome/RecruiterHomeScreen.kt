@@ -89,12 +89,12 @@ fun RecruiterHomeScreen(
                         }
                         "Tạo bài đăng tuyển dụng mới" -> {
                             navController.navigate(
-                                Screen.JobForm.withArgs(id, name, logo)
+                                Screen.JobForm.withCreateArgs(id, name, logo)
                             )
                         }
 
                         "Xem danh sách bài đăng đã đào tạo" -> {
-                            // TODO: Điều hướng đến màn danh sách bài đăng
+                            navController.navigate(Screen.RecruiterManageJobs.route)
                         }
 
                         "Xem danh sách ứng viên đã nộp đơn" -> {
@@ -102,11 +102,11 @@ fun RecruiterHomeScreen(
                         }
 
                         "Hỗ trợ" -> {
-                            // TODO: Mở support (hoặc external link)
+                            navController.navigate(Screen.Support.route)
                         }
 
                         "Cài đặt" -> {
-                            // TODO: Mở màn hình cài đặt nếu có
+                            navController.navigate(Screen.Settings.route)
                         }
 
                         "Đăng xuất" -> {
